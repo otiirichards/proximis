@@ -548,7 +548,7 @@ function generatePatterns(donors, pipeline, budgets, grants, touchpoints) {
     const crit = riskGrants.filter(g=>assessBurn(g).level==="Critical");
     const high  = riskGrants.filter(g=>assessBurn(g).level==="High");
     patterns.push({
-      id:"pat_absorption", type:"systemic", icon:"⚠",
+      id:"pat_absorption", type:"systemic", icon:"",
       title:`${riskGrants.length} grants showing simultaneous absorption risk`,
       detail:`${riskGrants.map(g=>g.programme).join(", ")}. When multiple grants show absorption problems at the same time, the root cause is rarely isolated to individual grants. This pattern signals a systemic delivery bottleneck: procurement delays, staffing gaps, or programme design issues affecting capacity across the portfolio.`,
       recommendation:"Convene a cross-programme delivery review before submitting any individual disbursement requests. Identify the shared bottleneck and address it at portfolio level, not grant by grant.",
@@ -564,7 +564,7 @@ function generatePatterns(donors, pipeline, budgets, grants, touchpoints) {
     const topDonor = Object.entries(donorTotals).sort((a,b)=>b[1]-a[1])[0];
     if(topDonor && topDonor[1]/totalWtP > 0.4) {
       patterns.push({
-        id:"pat_concentration_donor", type:"strategic", icon:"📊",
+        id:"pat_concentration_donor", type:"strategic", icon:"",
         title:`Pipeline concentration: ${Math.round(topDonor[1]/totalWtP*100)}% dependent on ${topDonor[0]}`,
         detail:`${fmt(topDonor[1])} of your ${fmt(totalWtP)} weighted pipeline sits with a single donor. If ${topDonor[0]} shifts strategy, delays a decision, or reduces its programme, your portfolio faces a structural funding shortfall that cannot be corrected quickly.`,
         recommendation:"Diversify the pipeline by identifying and advancing at least two additional opportunities in different donor categories within the next quarter.",
@@ -583,7 +583,7 @@ function generatePatterns(donors, pipeline, budgets, grants, touchpoints) {
     if(items.length >= 2) {
       const totalGap = items.reduce((s,i)=>s+i.gap,0);
       patterns.push({
-        id:"pat_theme_"+theme, type:"strategic", icon:"🔍",
+        id:"pat_theme_"+theme, type:"strategic", icon:"",
         title:`Structural gap: ${theme} unfunded across ${items.length} programmes`,
         detail:`${items.map(i=>i.prog).join(", ")} all have unmet funding needs in ${theme}, totalling ${fmt(totalGap)}. This is not a pipeline execution problem; it is a donor portfolio gap. You have insufficient ${theme} donors mapped at the right scale.`,
         recommendation:`Audit your ${theme} donor map. Add at least 3 new prospects with explicit ${theme} focus and sufficient grant size to meaningfully reduce this structural gap.`,
@@ -598,7 +598,7 @@ function generatePatterns(donors, pipeline, budgets, grants, touchpoints) {
     const cooling = typeDonors.filter(d=>{const e=scoreEng(d.id,touchpoints);return e.overall<50&&e.overall>0;});
     if(cooling.length >= 3) {
       patterns.push({
-        id:"pat_cooling_"+type, type:"relationship", icon:"❄",
+        id:"pat_cooling_"+type, type:"relationship", icon:"",
         title:`${cooling.length} ${type} relationships simultaneously cooling`,
         detail:`${cooling.map(d=>d.name).join(", ")} are all showing Fading or Dormant engagement health. When multiple donors of the same type cool simultaneously, it often signals a sector-wide shift, a staffing change on their side, or that your organisation has deprioritised this donor category.`,
         recommendation:`Review your ${type} engagement strategy. Identify whether this is a sector-wide signal or an internal resourcing issue. Schedule substantive touchpoints with each of the ${cooling.length} affected donors this month.`,
@@ -1125,7 +1125,6 @@ function HomeScreen({donors,pipeline,budgets,grants,touchpoints,tracks,weights,o
                     onMouseLeave={e=>{e.currentTarget.style.boxShadow="none";e.currentTarget.style.transform="none";}}
                     style={{background:p.bg,border:`1.5px solid ${p.color}40`,borderLeft:`4px solid ${p.color}`,borderRadius:10,padding:"13px 16px",cursor:"pointer",transition:"box-shadow 0.15s,transform 0.12s"}}>
                     <div style={{display:"flex",alignItems:"flex-start",gap:10,marginBottom:6}}>
-                      <span style={{fontSize:16,flexShrink:0}}>{p.icon}</span>
                       <div style={{flex:1}}>
                         <div style={{...FS,fontSize:13,fontWeight:700,color:C.text,marginBottom:4}}>{p.title}</div>
                         <div style={{...FS,fontSize:11.5,color:"#3D3C38",lineHeight:1.6,marginBottom:8}}>{p.detail}</div>
@@ -1148,7 +1147,7 @@ function HomeScreen({donors,pipeline,budgets,grants,touchpoints,tracks,weights,o
               <div key={a.id} onClick={()=>onNav(ACTION_TAB[a.type]||"pipeline")}
                 onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 6px 20px rgba(0,0,0,0.10)";e.currentTarget.style.transform="translateY(-2px)";}}
                 onMouseLeave={e=>{e.currentTarget.style.boxShadow="none";e.currentTarget.style.transform="none";}}
-                style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden",borderLeft:`4px solid ${a.urgencyColor}`,cursor:"pointer",transition:"box-shadow 0.15s,transform 0.12s"}}>
+                style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden",cursor:"pointer",transition:"box-shadow 0.15s,transform 0.12s"}}>
                 <div style={{padding:"14px 16px"}}>
                   <div style={{display:"flex",alignItems:"flex-start",gap:12}}>
                     <div style={{width:28,height:28,borderRadius:"50%",background:i===0?C.green:i===1?C.amber:C.border,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:1}}>
@@ -1178,11 +1177,6 @@ function HomeScreen({donors,pipeline,budgets,grants,touchpoints,tracks,weights,o
             ))}
             {actions.length===0&&<div style={{...FS,fontSize:13,color:C.muted,padding:"2rem",textAlign:"center",background:C.card,border:`1px solid ${C.border}`,borderRadius:12}}>No priority actions identified: portfolio is in good shape.</div>}
           </div>
-
-          {/* ── EXTERNAL FUNDING SIGNALS — ReliefWeb ─────────────── */}
-          <ReliefWebSignals orgThemes={budgets.flatMap(b=>thArr(b)).filter((t,i,a)=>a.indexOf(t)===i)}/>
-        </div>
-
         <div>
           {alerts.length>0&&(
             <div style={{marginBottom:16}}>
@@ -1192,7 +1186,7 @@ function HomeScreen({donors,pipeline,budgets,grants,touchpoints,tracks,weights,o
                   <div key={i} onClick={()=>onNav(a.tab||"burn")}
                     onMouseEnter={e=>e.currentTarget.style.opacity="0.85"}
                     onMouseLeave={e=>e.currentTarget.style.opacity="1"}
-                    style={{padding:"10px 12px",background:a.bg,border:`1px solid ${a.color}30`,borderRadius:8,borderLeft:`3px solid ${a.color}`,cursor:"pointer",transition:"opacity 0.15s"}}>
+                    style={{padding:"10px 12px",background:a.bg,border:`1px solid ${a.color}30`,borderRadius:8,cursor:"pointer",transition:"opacity 0.15s"}}>
                     <div style={{...FS,fontSize:11.5,color:a.color,lineHeight:1.5}}>{a.msg}</div>
                   </div>
                 ))}
@@ -1248,6 +1242,7 @@ function HomeScreen({donors,pipeline,budgets,grants,touchpoints,tracks,weights,o
               </div>
             </div>
           </Card>
+          <ReliefWebSignals orgThemes={budgets.flatMap(b=>thArr(b)).filter((t,i,a)=>a.indexOf(t)===i)}/>
         </div>
       </div>
     </div>
